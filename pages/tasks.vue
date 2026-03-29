@@ -13,7 +13,7 @@
       </div>
 
       <div class="header-user">
-        <div class="user-info">
+        <div class="user-info" @click="router.push('/profile')" title="Profilga o'tish">
           <div class="user-avatar">{{ userInitial }}</div>
           <div class="user-details">
             <span class="user-name">{{ authStore.user?.name || authStore.user?.email }}</span>
@@ -391,6 +391,13 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+.user-info:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .user-avatar {
