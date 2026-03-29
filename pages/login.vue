@@ -16,10 +16,33 @@
         <span class="brand-name">TaskFlow</span>
       </div>
 
-      <h1 class="login-title">С возвращением</h1>
-      <p class="login-subtitle">Войдите, чтобы управлять задачами</p>
+      <h1 class="login-title">{{ isLogin ? 'Авторизация' : 'Регистрация' }}</h1>
+      <p class="login-subtitle">
+        {{ isLogin ? 'Войдите, чтобы управлять задачами' : 'Создайте новый аккаунт' }}
+      </p>
 
       <form id="login-form" class="login-form" @submit.prevent="onSubmit" novalidate>
+        <!-- Name (Only on register) -->
+        <Transition name="slide-up">
+          <div v-if="!isLogin" class="form-group">
+            <label for="name-input">Имя</label>
+            <div class="input-wrapper" :class="{ error: errors.name }">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input
+                id="name-input"
+                v-model="name"
+                type="text"
+                placeholder="Новый Пользователь"
+                @blur="validateName"
+              />
+            </div>
+            <span v-if="errors.name" class="form-error">{{ errors.name }}</span>
+          </div>
+        </Transition>
+
         <!-- Email -->
         <div class="form-group">
           <label for="email-input">Email</label>
@@ -32,7 +55,7 @@
               id="email-input"
               v-model="email"
               type="email"
-              placeholder="admin@test.com"
+              :placeholder="isLogin ? 'admin@test.com' : 'new@test.com'"
               autocomplete="email"
               @blur="validateEmail"
             />
@@ -95,20 +118,29 @@
           :disabled="loading"
         >
           <div v-if="loading" class="spinner" />
-          <span>{{ loading ? 'Входим...' : 'Войти' }}</span>
+          <span>{{ loading ? (isLogin ? 'Входим...' : 'Регистрация...') : (isLogin ? 'Войти' : 'Создать аккаунт') }}</span>
         </button>
       </form>
 
+      <div class="toggle-mode-wrapper text-center mt-3">
+        <button type="button" class="btn-ghost mode-toggle-btn" @click="toggleMode">
+          {{ isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти' }}
+        </button>
+      </div>
+
       <!-- Demo credentials hint -->
-      <div class="demo-hint">
-        <p class="demo-title">Демо-аккаунты:</p>
+      <div v-if="isLogin" class="demo-hint">
+        <p class="demo-title">Демо-аккаунты (Mock):</p>
         <div class="demo-accounts">
           <button
             type="button"
             class="demo-btn"
             @click="fillDemo('admin@test.com', '123456')"
           >
-            <span class="badge badge-admin">Admin</span>
+            <span class="badge badge-admin">
+              <img src="/admin_icon.png" width="14" height="14" alt="Admin" style="vertical-align: middle; margin-right: 2px" />
+              Админ
+            </span>
             admin@test.com
           </button>
           <button
@@ -116,11 +148,14 @@
             class="demo-btn"
             @click="fillDemo('user@test.com', '123456')"
           >
-            <span class="badge badge-user">User</span>
+            <span class="badge badge-user">
+              <img src="/user_icon.png" width="14" height="14" alt="User" style="vertical-align: middle; margin-right: 2px" />
+              User
+            </span>
             user@test.com
           </button>
         </div>
-        <p class="demo-pass">Пароль для обоих: <code>123456</code></p>
+        <p class="demo-pass">Пароль: <code>123456</code></p>
       </div>
     </div>
   </div>
@@ -134,13 +169,32 @@ import { useAuthStore } from '~/stores/auth.store'
 const router = useRouter()
 const authStore = useAuthStore()
 
+const isLogin = ref(true)
+
+const name = ref('')
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 const apiError = ref('')
 
-const errors = reactive({ email: '', password: '' })
+const errors = reactive({ name: '', email: '', password: '' })
+
+function toggleMode() {
+  isLogin.value = !isLogin.value
+  apiError.value = ''
+  errors.name = ''
+  errors.email = ''
+  errors.password = ''
+}
+
+function validateName() {
+  if (!isLogin.value && !name.value) {
+    errors.name = 'Имя обязательно'
+  } else {
+    errors.name = ''
+  }
+}
 
 function validateEmail() {
   if (!email.value) {
@@ -171,18 +225,24 @@ function fillDemo(e: string, p: string) {
 }
 
 async function onSubmit() {
+  validateName()
   validateEmail()
   validatePassword()
-  if (errors.email || errors.password) return
+  
+  if (errors.email || errors.password || (!isLogin.value && errors.name)) return
 
   loading.value = true
   apiError.value = ''
 
   try {
-    await authStore.login(email.value, password.value)
+    if (isLogin.value) {
+      await authStore.login(email.value, password.value)
+    } else {
+      await authStore.register(name.value, email.value, password.value)
+    }
     router.push('/tasks')
   } catch (e: any) {
-    apiError.value = e.message || 'Ошибка входа'
+    apiError.value = e.message || 'Ошибка сервера'
   } finally {
     loading.value = false
   }
@@ -331,6 +391,15 @@ async function onSubmit() {
   padding: 0.875rem;
   font-size: 1rem;
   margin-top: 0.25rem;
+}
+
+.mode-toggle-btn {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.mode-toggle-btn:hover {
+  color: var(--accent-light);
 }
 
 /* Demo hint */

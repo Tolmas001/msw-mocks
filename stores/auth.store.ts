@@ -58,6 +58,28 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function register(name: string, email: string, password: string): Promise<void> {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error((err as any).message || 'Ошибка регистрации')
+    }
+
+    const data = await res.json() as { token: string; user: UserInfo }
+    token.value = data.token
+    user.value = data.user
+
+    if (process.client) {
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+    }
+  }
+
   function logout() {
     token.value = null
     user.value = null
@@ -70,5 +92,5 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => user.value?.role === 'admin')
   const isLoggedIn = computed(() => !!token.value)
 
-  return { user, token, login, logout, initFromStorage, isAdmin, isLoggedIn }
+  return { user, token, login, register, logout, initFromStorage, isAdmin, isLoggedIn }
 })
