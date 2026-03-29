@@ -13,15 +13,18 @@
       </div>
 
       <div class="header-user">
-        <div class="user-info" @click="router.push('/profile')" title="Profilga o'tish">
+        <div class="user-info" @click="router.push('/profile')" title="Перейти в профиль">
           <div class="user-avatar">{{ userInitial }}</div>
           <div class="user-details">
             <span class="user-name">{{ authStore.user?.name || authStore.user?.email }}</span>
             <span
               class="badge"
               :class="authStore.isAdmin ? 'badge-admin' : 'badge-user'"
+              style="display: inline-flex; align-items: center; gap: 0.25rem;"
             >
-              {{ authStore.isAdmin ? '★ Admin' : '◎ User' }}
+              <img v-if="authStore.isAdmin" src="/admin_icon.png" alt="Admin" width="14" height="14" />
+              <img v-else src="/user_icon.png" alt="User" width="14" height="14" />
+              {{ authStore.isAdmin ? 'Администратор' : 'Пользователь' }}
             </span>
           </div>
         </div>

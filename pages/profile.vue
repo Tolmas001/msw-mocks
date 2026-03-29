@@ -7,7 +7,7 @@
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </div>
-        <span class="brand-name">Orqaga (Vazifalar)</span>
+        <span class="brand-name">Назад (Задачи)</span>
       </div>
 
       <div class="header-user">
@@ -28,18 +28,18 @@
           :class="{ active: activeTab === 'profile' }" 
           @click="activeTab = 'profile'"
         >
-          Profil
+          Профиль
         </button>
         <button 
           class="tab-btn" 
           :class="{ active: activeTab === 'settings' }" 
           @click="activeTab = 'settings'"
         >
-          Sozlamalar
+          Настройки
         </button>
       </div>
 
-      <!-- PROFIL TAB -->
+      <!-- ПРОФИЛЬ TAB -->
       <div v-if="activeTab === 'profile'" class="profile-card glass-card fade-in">
         <div class="profile-header">
           <div class="profile-avatar">{{ userInitial }}</div>
@@ -48,8 +48,11 @@
             <span
               class="badge"
               :class="authStore.isAdmin ? 'badge-admin' : 'badge-user'"
+              style="display: inline-flex; align-items: center; gap: 0.35rem;"
             >
-              {{ authStore.isAdmin ? '★ System Admin' : '◎ Regular User' }}
+              <img v-if="authStore.isAdmin" src="/admin_icon.png" alt="Admin" width="18" height="18" />
+              <img v-else src="/user_icon.png" alt="User" width="18" height="18" />
+              {{ authStore.isAdmin ? 'Системный Администратор' : 'Пользователь' }}
             </span>
           </div>
         </div>
@@ -62,7 +65,7 @@
             <span class="info-value">{{ authStore.user?.email }}</span>
           </div>
           <div class="info-group">
-            <span class="info-label">Foydalanuvchi ID:</span>
+            <span class="info-label">ID Пользователя:</span>
             <span class="info-value">#{{ authStore.user?.id }}</span>
           </div>
         </div>
@@ -70,67 +73,67 @@
         <div class="divider" />
 
         <div v-if="authStore.isAdmin" class="role-section admin-section">
-          <h3>Admin Ruxsatlari</h3>
-          <p class="section-desc">Tizimdagi barcha vazifalarni o'chirish va tahrirlash huquqiga egasiz.</p>
+          <h3>Права Администратора</h3>
+          <p class="section-desc">У вас есть право удалять и редактировать все задачи в системе.</p>
           <div class="stats-grid">
             <div class="stat-box">
-              <div class="stat-value">Tizim Statusi</div>
-              <div class="stat-label text-success">Barqaror</div>
+              <div class="stat-value">Статус</div>
+              <div class="stat-label text-success">Стабильно</div>
             </div>
             <div class="stat-box">
-              <div class="stat-value">Huquqlar</div>
-              <div class="stat-label">To'liq boshqaruv</div>
+              <div class="stat-value">Права</div>
+              <div class="stat-label">Полный доступ</div>
             </div>
           </div>
         </div>
 
         <div v-else class="role-section user-section">
-          <h3>Mening Huquqlarim</h3>
-          <p class="section-desc">Siz faqat o'zingiz yaratgan vazifalarni boshqara olasiz.</p>
+          <h3>Мои Права</h3>
+          <p class="section-desc">Вы можете управлять только своими созданными задачами.</p>
           <div class="stats-grid">
             <div class="stat-box">
-              <div class="stat-value">Huquqlar</div>
-              <div class="stat-label">Cheklangan</div>
+              <div class="stat-value">Права</div>
+              <div class="stat-label">Ограниченные</div>
             </div>
             <div class="stat-box">
-              <div class="stat-value">Status</div>
-              <div class="stat-label text-accent">Faol foydalanuvchi</div>
+              <div class="stat-value">Статус</div>
+              <div class="stat-label text-accent">Активный</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SOZLAMALAR TAB -->
+      <!-- НАСТРОЙКИ TAB -->
       <div v-if="activeTab === 'settings'" class="settings-card glass-card fade-in">
-        <h2 class="settings-title">Shaxsiy Sozlamalar</h2>
-        <p class="settings-desc">O'z akkauntingiz ma'lumotlarini tahrirlang.</p>
+        <h2 class="settings-title">Личные Настройки</h2>
+        <p class="settings-desc">Измените данные вашего аккаунта.</p>
 
         <form class="settings-form" @submit.prevent="saveUserSettings">
           <div class="form-group">
-            <label>Ism-sharif</label>
-            <input type="text" v-model="userForm.name" placeholder="Ismingizni kiriting" />
+            <label>Имя</label>
+            <input type="text" v-model="userForm.name" placeholder="Введите имя" />
           </div>
           <div class="form-group">
-            <label>Yangi Parol</label>
-            <input type="password" v-model="userForm.password" placeholder="Yangi parolni kiriting (ixtiyoriy)" />
+            <label>Новый пароль</label>
+            <input type="password" v-model="userForm.password" placeholder="Введите новый пароль (необязательно)" />
           </div>
           <button type="submit" class="btn-primary w-full" :disabled="saving">
-            {{ saving ? 'Saqlanmoqda...' : 'O\'zgarishlarni saqlash' }}
+            {{ saving ? 'Сохранение...' : 'Сохранить изменения' }}
           </button>
           <p v-if="successMsg" class="text-success text-center mt-2" style="font-size: 0.85rem;">{{ successMsg }}</p>
         </form>
 
-        <!-- ADMIN SOZLAMALARI -->
+        <!-- АДМИН НАСТРОЙКИ -->
         <template v-if="authStore.isAdmin">
           <div class="divider" style="margin: 2rem 0;" />
-          <h2 class="settings-title text-warning">Admin Sozlamalari (Global)</h2>
-          <p class="settings-desc">Tizimni va boshqa foydalanuvchilarni boshqarish maxsus paneli.</p>
+          <h2 class="settings-title text-warning">Глобальные Настройки</h2>
+          <p class="settings-desc">Специальная панель управления пользователями и системой.</p>
 
           <div class="admin-settings-block">
             <div class="admin-setting-item">
               <div class="setting-text">
-                <strong>Texnik xizmat rejimi</strong>
-                <span>Saytga kirishni vaqtincha to'xtatish.</span>
+                <strong>Режим обслуживания</strong>
+                <span>Временно закрыть доступ к сайту.</span>
               </div>
               <label class="toggle-switch">
                 <input type="checkbox" v-model="adminSettings.maintenance" />
@@ -140,8 +143,8 @@
 
             <div class="admin-setting-item">
               <div class="setting-text">
-                <strong>Foydalanuvchilarni ro'yxatdan o'tishi</strong>
-                <span>Yangi userlar registratsiyasini yopish.</span>
+                <strong>Регистрация пользователей</strong>
+                <span>Закрыть регистрацию для новых пользователей.</span>
               </div>
               <label class="toggle-switch">
                 <input type="checkbox" v-model="adminSettings.registrations" />
@@ -151,14 +154,14 @@
           </div>
 
           <div class="users-list-section">
-            <h3>Tizimdagi Foydalanuvchilar (Mock)</h3>
+            <h3>Пользователи системы (Mock)</h3>
             <table class="users-table">
               <thead>
                 <tr>
                   <th>ID</th>
                   <th>Email</th>
-                  <th>Rol</th>
-                  <th>Harakat</th>
+                  <th>Роль</th>
+                  <th>Действие</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,7 +175,7 @@
                   <td>2</td>
                   <td>user@test.com</td>
                   <td><span class="badge badge-user">User</span></td>
-                  <td><button class="btn-ghost btn-icon text-danger" title="Bloklash">∅</button></td>
+                  <td><button class="btn-ghost btn-icon" title="Блокировать"><img src="/block_icon.png" width="22" height="22" alt="Block"/></button></td>
                 </tr>
               </tbody>
             </table>
@@ -219,7 +222,7 @@ function saveUserSettings() {
   setTimeout(() => {
     // Just a mock save visual representation
     saving.value = false
-    successMsg.value = 'Hamma o\'zgarishlar muvaffaqiyatli saqlandi!'
+    successMsg.value = 'Все изменения успешно сохранены!'
     setTimeout(() => { successMsg.value = '' }, 3000)
   }, 1000)
 }
