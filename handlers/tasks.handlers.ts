@@ -21,7 +21,10 @@ export const taskHandlers = [
     const page = parseInt(url.searchParams.get('page') || '1', 10)
     const limit = parseInt(url.searchParams.get('limit') || '5', 10)
 
-    let result = [...tasks]
+    // Regular users only see their own tasks. Admins see everything.
+    let result = user.role === 'admin' 
+      ? [...tasks] 
+      : tasks.filter(t => t.OwnerId === user.id)
 
     // Search filter
     if (search) {
