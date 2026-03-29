@@ -15,6 +15,7 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Мини-приложение для управления задачами с авторизацией' },
       ],
       link: [
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
